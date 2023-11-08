@@ -9,3 +9,15 @@ export const helloWorld = async () => {
     });
     return response.data;
 }
+
+export const translateAndGrade = async (textToTranslate: string) => {
+    const response = await axios.post('http://127.0.0.1:8000/translate', {
+        text: textToTranslate
+    }, {
+        headers: {
+            'Access-Control-Allow-Origin' : 'http://127.0.0.1:8000',
+            'Access-Control-Allow-Methods':'GET,PUT,POST,DELETE,PATCH,OPTIONS',
+        }
+    });
+    return response.data;
+}

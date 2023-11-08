@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -13,6 +14,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+class Item(BaseModel):
+    text: str
+
+
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
@@ -21,3 +27,17 @@ async def root():
 @app.get("/hello/{name}")
 async def say_hello(name: str):
     return {"message": f"Hello {name}"}
+
+
+@app.post("/translate")
+async def translate_and_grade(input: Item):
+    try:
+        processed_text = input.text[::-1]
+        return {"original_text": input.text, "processed_text": processed_text}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
