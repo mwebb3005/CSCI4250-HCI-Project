@@ -3,7 +3,9 @@ import RecordingComponent from "./components/RecordingComponent";
 
 function App() {
   return (
-      <RecordingComponent />
+      <>
+        <RecordingComponent />
+      </>
   )
 }
 

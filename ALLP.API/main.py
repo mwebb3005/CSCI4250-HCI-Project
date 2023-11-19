@@ -1,8 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from googletrans import Translator
 
 app = FastAPI()
+translator = Translator()
 
 origins = ["*"]
 
@@ -33,7 +35,9 @@ async def say_hello(name: str):
 async def translate_and_grade(input: Item):
     try:
         processed_text = input.text[::-1]
-        return {"original_text": input.text, "processed_text": processed_text}
+        # detected = translator.detect('مساء الخير، أهلا بكم في اجتماعنا الليلة.')
+        test = translator.translate(processed_text, dest='en')
+        return {"original_text": input.text, "processed_text": test.text}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

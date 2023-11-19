@@ -5,10 +5,12 @@ const RecordingComponent: FC = () => {
     const [isRecording, setIsRecording] = useState(false);
     const [transcript, setTranscript] = useState<string>("");
     const recognitionRef = useRef(null);
+    const [originalResult, setOriginalResult] = useState("");
+    const [translatedResult, setTranslatedResult] = useState("");
 
     useEffect(() => {
         const recognition = new window.webkitSpeechRecognition() || new window.SpeechRecognition();
-        //recognition.lang = 'ar-SA'
+        recognition.lang = 'ar-EG';
         recognition.continuous = true;
         recognition.interimResults = true;
 
@@ -31,7 +33,9 @@ const RecordingComponent: FC = () => {
 
         // This return statement fixed the infinite loop bug. No useCallback needed
         return () => {
-            recognitionRef.current.stop();
+            if (recognitionRef.current) {
+                recognitionRef.current.stop();
+            }
         }
     }, [])
 
@@ -40,8 +44,7 @@ const RecordingComponent: FC = () => {
             recognitionRef.current.start();
             setIsRecording(true);
             setTranscript("")
-        }
-        else {
+        } else {
             console.error("Error")
         }
 
@@ -51,25 +54,28 @@ const RecordingComponent: FC = () => {
         if (recognitionRef.current) {
             recognitionRef.current.stop();
             setIsRecording(false);
-            translateAndGrade(transcript)
-        }
-        else {
+            translateAndGrade(transcript).then((result) => {
+                setOriginalResult(result.original_text);
+                setTranslatedResult(result.processed_text)
+            })
+        } else {
             console.error("Error")
         }
     };
 
 
     return (
-        <div className="flex items-center justify-center h-screen w-full">
-            <div className="w-full">
-                <div className={'absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/4 h-32'}>
-                    <div className={`flex items-center overflow-y-auto pr-32 h-32 translate-y-2 m-auto rounded-md border p-4 bg-white transition-[opacity] duration-500 ease-in-out ${isRecording ? 'opacity-100' : 'opacity-0' }`}>
-                        {transcript}
+        <div className="flex flex-col items-center justify-center h-screen w-full">
+            <div className="w-full mt-10 relative">
+                    <div className={'absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/4 h-32'}>
+                        <div
+                            className={`flex items-center overflow-y-auto pr-32 h-32 translate-y-2 m-auto rounded-md border p-4 bg-white transition-[opacity] duration-500 ease-in-out ${isRecording ? 'opacity-100' : 'opacity-0'}`}>
+                            {transcript}
+                        </div>
                     </div>
-                </div>
                     <button
                         onClick={isRecording ? stopRecording : startRecording}
-                        className={`translate-y-2 m-auto flex items-center justify-center ${isRecording ? 'bg-red-400 hover:bg-red-500 translate-x-40' : 'bg-blue-400 hover:bg-blue-500 translate-x-0'} rounded-full focus:outline-none w-20 h-20 transition-all duration-500 ease-in-out relative`}
+                        className={`translate-y-2 m-auto flex items-center justify-center ${isRecording ? 'bg-red-400 hover:bg-red-500 translate-x-44' : 'bg-blue-400 hover:bg-blue-500 translate-x-0'} rounded-full focus:outline-none w-20 h-20 transition-all duration-500 ease-in-out relative`}
                     >
                         <svg
                             viewBox="0 0 256 256"
@@ -90,9 +96,14 @@ const RecordingComponent: FC = () => {
                             <path fill="currentColor" d="M5 5h14v14H5z"/>
                         </svg>
                     </button>
+                </div>
+                <div className="text-center mt-16 flex-1 w-full">
+                    <div>{originalResult}</div>
+                    <div>{translatedResult}</div>
+                </div>
             </div>
-        </div>
     );
+
 }
 
 export default RecordingComponent;
