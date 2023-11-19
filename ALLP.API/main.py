@@ -34,10 +34,9 @@ async def say_hello(name: str):
 @app.post("/translate")
 async def translate_and_grade(input: Item):
     try:
-        processed_text = input.text[::-1]
-        # detected = translator.detect('مساء الخير، أهلا بكم في اجتماعنا الليلة.')
-        test = translator.translate(processed_text, dest='en')
-        return {"original_text": input.text, "processed_text": test.text}
+        processed_text = input.text
+        result = translator.translate(processed_text, dest='en')
+        return {"original_text": input.text, "processed_text": result.text}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
