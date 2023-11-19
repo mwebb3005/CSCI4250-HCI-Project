@@ -26,9 +26,9 @@ async def root():
     return {"message": "Hello World"}
 
 
-@app.get("/hello/{name}")
+@app.get("/prompt")
 async def say_hello(name: str):
-    return {"message": f"Hello {name}"}
+    return {"prompt": f"Hello {name}"}
 
 
 @app.post("/translate")
@@ -39,6 +39,8 @@ async def translate_and_grade(input: Item):
         return {"original_text": input.text, "processed_text": result.text}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
 
 
 if __name__ == "__main__":

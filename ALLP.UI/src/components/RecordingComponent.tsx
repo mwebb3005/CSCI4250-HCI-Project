@@ -1,12 +1,11 @@
-import {FC, useEffect, useRef, useState} from "react";
-import {translateAndGrade} from "../services/api";
+import {useEffect, useRef, useState} from "react";
+import {RecordingState, useLanguageProvider} from "../context/LanguageContext";
 
-const RecordingComponent: FC = () => {
-    const [isRecording, setIsRecording] = useState(false);
-    const [transcript, setTranscript] = useState<string>("");
+
+const RecordingComponent = () => {
+
     const recognitionRef = useRef(null);
-    const [originalResult, setOriginalResult] = useState("");
-    const [translatedResult, setTranslatedResult] = useState("");
+    const {recordingState, setRecordingState, transcript, setTranscript} = useLanguageProvider();
 
     useEffect(() => {
         const recognition = new window.webkitSpeechRecognition() || new window.SpeechRecognition();
@@ -42,7 +41,7 @@ const RecordingComponent: FC = () => {
     const startRecording = () => {
         if (recognitionRef.current) {
             recognitionRef.current.start();
-            setIsRecording(true);
+            setRecordingState(RecordingState.Recording);
             setTranscript("")
         } else {
             console.error("Error")
@@ -53,55 +52,64 @@ const RecordingComponent: FC = () => {
     const stopRecording = () => {
         if (recognitionRef.current) {
             recognitionRef.current.stop();
-            setIsRecording(false);
-            translateAndGrade(transcript).then((result) => {
-                setOriginalResult(result.original_text);
-                setTranslatedResult(result.processed_text)
-            })
+            setRecordingState(RecordingState.Review);
         } else {
             console.error("Error")
         }
     };
 
+    const onActionButtonClicked = () => {
+        console.log(recordingState)
+        switch (recordingState) {
+            case RecordingState.Stopped:
+                startRecording();
+                break;
+            case RecordingState.Recording:
+                stopRecording();
+                break;
+            case RecordingState.Review:
+                startRecording();
+                break;
+        }
+    }
 
     return (
-        <div className="flex flex-col items-center justify-center h-screen w-full">
+
             <div className="w-full mt-10 relative">
-                    <div className={'absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/4 h-32'}>
-                        <div
-                            className={`flex items-center overflow-y-auto pr-32 h-32 translate-y-2 m-auto rounded-md border p-4 bg-white transition-[opacity] duration-500 ease-in-out ${isRecording ? 'opacity-100' : 'opacity-0'}`}>
-                            {transcript}
-                        </div>
+                <div className={'absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-1/4 h-32'}>
+                    <div
+                        className={`flex items-center overflow-y-auto pr-32 h-32 translate-y-2 m-auto rounded-md border p-4 bg-white transition-[opacity] duration-500 ease-in-out ${recordingState !== RecordingState.Stopped && recordingState !== RecordingState.Grading ? 'opacity-100' : 'opacity-0'}`}>
+                        {transcript}
                     </div>
-                    <button
-                        onClick={isRecording ? stopRecording : startRecording}
-                        className={`translate-y-2 m-auto flex items-center justify-center ${isRecording ? 'bg-red-400 hover:bg-red-500 translate-x-44' : 'bg-blue-400 hover:bg-blue-500 translate-x-0'} rounded-full focus:outline-none w-20 h-20 transition-all duration-500 ease-in-out relative`}
-                    >
-                        <svg
-                            viewBox="0 0 256 256"
-                            xmlns="http://www.w3.org/2000/svg"
-                            className={`w-12 h-12 text-white absolute transition-transform duration-500 ease-in-out ${isRecording ? 'scale-0' : 'scale-100'}`}
-                        >
-                            <path
-                                fill="currentColor"
-                                d="M128 176a48.05 48.05 0 0 0 48-48V64a48 48 0 0 0-96 0v64a48.05 48.05 0 0 0 48 48ZM96 64a32 32 0 0 1 64 0v64a32 32 0 0 1-64 0Zm40 143.6V232a8 8 0 0 1-16 0v-24.4A80.11 80.11 0 0 1 48 128a8 8 0 0 1 16 0a64 64 0 0 0 128 0a8 8 0 0 1 16 0a80.11 80.11 0 0 1-72 79.6Z"
-                            />
-                        </svg>
-                        <svg
-                            className={`w-12 h-12 text-white absolute transition-transform duration-500 ease-in-out ${isRecording ? 'scale-100' : 'scale-0'}`}
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
-                        >
-                            <path fill="currentColor" d="M5 5h14v14H5z"/>
-                        </svg>
-                    </button>
                 </div>
-                <div className="text-center mt-16 flex-1 w-full">
-                    <div>{originalResult}</div>
-                    <div>{translatedResult}</div>
-                </div>
+                <button
+                    onClick={onActionButtonClicked}
+                    disabled={RecordingState === RecordingState.Grading}
+                    className={`translate-y-2 m-auto flex items-center justify-center 
+                        ${recordingState !== RecordingState.Stopped && recordingState !== RecordingState.Grading ? 'translate-x-44' : 'translate-x-0'}
+                        ${recordingState === RecordingState.Recording ? 'bg-red-400 hover:bg-red-500' : 'bg-blue-400 hover:bg-blue-500'} 
+                        rounded-full focus:outline-none w-20 h-20 transition-all duration-500 ease-in-out relative`}
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"
+                         className={`w-12 h-12 absolute transition-transform duration-500 ease-in-out ${recordingState !== RecordingState.Recording && recordingState !== RecordingState.Grading ? 'scale-100' : 'scale-0'}`}>
+                        <path d="M8.25 4.5a3.75 3.75 0 117.5 0v8.25a3.75 3.75 0 11-7.5 0V4.5z"/>
+                        <path
+                            d="M6 10.5a.75.75 0 01.75.75v1.5a5.25 5.25 0 1010.5 0v-1.5a.75.75 0 011.5 0v1.5a6.751 6.751 0 01-6 6.709v2.291h3a.75.75 0 010 1.5h-7.5a.75.75 0 010-1.5h3v-2.291a6.751 6.751 0 01-6-6.709v-1.5A.75.75 0 016 10.5z"/>
+                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"
+                         className={`w-12 h-12 absolute transition-transform duration-500 ease-in-out ${recordingState === RecordingState.Recording ? 'scale-100' : 'scale-0'}`}>
+                        <path fillRule="evenodd"
+                              d="M4.5 7.5a3 3 0 013-3h9a3 3 0 013 3v9a3 3 0 01-3 3h-9a3 3 0 01-3-3v-9z"
+                              clipRule="evenodd"/>
+                    </svg>
+                    <div className={`absolute w-16 h-16 transition-transform duration-500 ease-in-out ${recordingState === RecordingState.Grading ? 'scale-100' : 'scale-0'}`}>
+                        <div
+                            className={`w-16 h-16 animate-spin rounded-full border-8 border-solid border-white border-r-transparent align-[-0.125em] text-primary motion-reduce:animate-[spin_1.5s_linear_infinite]`}
+                            role="status" />
+                        </div>
+                </button>
             </div>
+
     );
 
 }

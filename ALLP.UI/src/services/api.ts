@@ -10,7 +10,7 @@ export const helloWorld = async () => {
     return response.data;
 }
 
-export const translateAndGrade = async (textToTranslate: string) => {
+export const translateAndGradeApi = async (textToTranslate: string) => {
     const response = await axios.post('http://127.0.0.1:8000/translate', {
         text: textToTranslate
     }, {
