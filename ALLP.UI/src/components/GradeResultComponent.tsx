@@ -6,7 +6,9 @@ const GradeResultComponent = () => {
     const {englishResult, arabicResult} = useLanguageProvider();
 
     return <div className={`text-4xl`}>
-        <TokenTypography text={arabicResult} />
+        <span className={'text-gray-600'}>
+            <TokenTypography text={arabicResult} />
+        </span>
         <br />
         <TokenTypography text={englishResult} />
     </div>

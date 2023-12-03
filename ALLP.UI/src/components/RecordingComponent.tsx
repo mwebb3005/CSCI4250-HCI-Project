@@ -25,6 +25,7 @@ const RecordingComponent = () => {
                 }
             }
 
+            console.log(interimTranscript)
             setTranscript(interimTranscript + finalTranscript);
         };
 
@@ -84,7 +85,7 @@ const RecordingComponent = () => {
                 </div>
                 <button
                     onClick={onActionButtonClicked}
-                    disabled={RecordingState === RecordingState.Grading}
+                    disabled={recordingState === RecordingState.Grading}
                     className={`translate-y-2 m-auto flex items-center justify-center 
                         ${recordingState !== RecordingState.Stopped && recordingState !== RecordingState.Grading ? 'translate-x-44' : 'translate-x-0'}
                         ${recordingState === RecordingState.Recording ? 'bg-red-400 hover:bg-red-500' : 'bg-blue-400 hover:bg-blue-500'} 
