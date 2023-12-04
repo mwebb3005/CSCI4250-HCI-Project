@@ -21,3 +21,13 @@ export const translateAndGradeApi = async (textToTranslate: string) => {
     });
     return response.data;
 }
+
+export const getPromptsApi = async () => {
+    const response = await axios.get('http://127.0.0.1:8000/prompts', {
+        headers: {
+            'Access-Control-Allow-Origin' : 'http://127.0.0.1:8000',
+            'Access-Control-Allow-Methods':'GET,PUT,POST,DELETE,PATCH,OPTIONS',
+        }
+    });
+    return response.data;
+}

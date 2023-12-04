@@ -1,7 +1,7 @@
 // Might use this context for grading/translating. Not quite sure yet
 
-import {createContext, Dispatch, SetStateAction, useContext, useState} from "react";
-import {translateAndGradeApi} from "../services/api";
+import {createContext, Dispatch, SetStateAction, useContext, useEffect, useState} from "react";
+import {getPromptsApi, translateAndGradeApi} from "../services/api";
 
 export enum RecordingState {
     Stopped,
@@ -19,6 +19,8 @@ export interface ILanguageContext {
     translateAndGrade: Function;
     setRecordingState: Dispatch<SetStateAction<RecordingState>>;
     setTranscript: Dispatch<SetStateAction<string>>;
+    currentPrompt: Prompt | undefined;
+    nextPrompt: Function
 }
 
 const LanguageContext = createContext<ILanguageContext>({
@@ -29,8 +31,15 @@ const LanguageContext = createContext<ILanguageContext>({
     transcript: "",
     translateAndGrade: () => {},
     setRecordingState: () => {},
-    setTranscript: () => {}
+    setTranscript: () => {},
+    currentPrompt: undefined,
+    nextPrompt: () => {}
 });
+
+export type Prompt = {
+    original: string;
+    translation: string;
+}
 
 
 const LanguageProvider = ({children}) => {
@@ -39,6 +48,43 @@ const LanguageProvider = ({children}) => {
     const [transcript, setTranscript] = useState<string>("");
     const [englishResult, setEnglishResult] = useState<string>("");
     const [arabicResult, setArabicResult] = useState<string>("");
+    const [prompts, setPrompts] = useState<Prompt[]>([]);
+    const [currentPromptIndex, setCurrentPromptIndex] = useState<number>(0);
+    const [currentPrompt, setCurrentPrompt] = useState<Prompt>();
+
+    useEffect(() => {
+        fetchPrompts()
+    }, []);
+
+    useEffect(() => {
+        if (prompts.length > currentPromptIndex){
+            setCurrentPrompt(prompts[currentPromptIndex])
+        }
+
+    }, [prompts, currentPromptIndex]);
+
+
+    const fetchPrompts = () => {
+        getPromptsApi().then(p => {
+            setPrompts(p);
+        })
+    }
+
+
+    const nextPrompt = () => {
+        setArabicResult("");
+        setEnglishResult("");
+        setTranscript("")
+        setRecordingState(RecordingState.Stopped)
+        setCurrentPromptIndex((cur) => {
+            if (cur === prompts.length - 1) {
+                return 0;
+            }
+            else {
+                return cur + 1;
+            }
+        });
+    }
 
     const translateAndGrade = () => {
         translateAndGradeApi(transcript).then(result => {
@@ -57,7 +103,9 @@ const LanguageProvider = ({children}) => {
         transcript,
         translateAndGrade,
         setRecordingState,
-        setTranscript
+        setTranscript,
+        currentPrompt,
+        nextPrompt
     }}>
         {children}
     </LanguageContext.Provider>

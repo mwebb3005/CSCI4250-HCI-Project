@@ -1,7 +1,10 @@
+import random
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from googletrans import Translator
+from prompts import sentences
 
 app = FastAPI()
 translator = Translator()
@@ -21,14 +24,10 @@ class Item(BaseModel):
     text: str
 
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
-
-@app.get("/prompt")
-async def say_hello(name: str):
-    return {"prompt": f"Hello {name}"}
+@app.get("/prompts")
+async def prompts():
+    random.shuffle(sentences)
+    return sentences
 
 
 @app.post("/translate")
@@ -41,8 +40,7 @@ async def translate_and_grade(input: Item):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-
-
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -9,7 +9,8 @@ const RecordingComponent = () => {
 
     useEffect(() => {
         const recognition = new window.webkitSpeechRecognition() || new window.SpeechRecognition();
-        recognition.lang = 'ar-EG';
+        //recognition.lang = 'ar-EG';
+        recognition.lang = 'ja'
         recognition.continuous = true;
         recognition.interimResults = true;
 

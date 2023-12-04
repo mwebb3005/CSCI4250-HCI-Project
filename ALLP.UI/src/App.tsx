@@ -5,7 +5,7 @@ import {RecordingState, useLanguageProvider} from "./context/LanguageContext";
 import PromptComponent from "./components/PromptComponent";
 
 const App = () => {
-    const {recordingState, setRecordingState, translateAndGrade} = useLanguageProvider();
+    const {recordingState, setRecordingState, translateAndGrade, currentPrompt} = useLanguageProvider();
 
     const onGradeButtonClicked = () => {
         setRecordingState(RecordingState.Grading);
@@ -14,7 +14,7 @@ const App = () => {
 
   return (
       <div className="flex flex-col items-center justify-center h-screen w-full">
-          <PromptComponent />
+          <PromptComponent prompt={currentPrompt} />
           <RecordingComponent />
           <div className="text-center mt-16 flex-1 w-full">
               <button
